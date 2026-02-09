@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+    environment:
+      - DEBUG=False
+      - DATABASE_URL=sqlite:///./forgery_detection.db
+    restart: unless-stopped
+
+  # Optional: PostgreSQL database
+  # db:
+  #   image: postgres:15
+  #   environment:
+  #     POSTGRES_USER: forgery
+  #     POSTGRES_PASSWORD: password
+  #     POSTGRES_DB: forgery_detection
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+# volumes:
+#   postgres_data:

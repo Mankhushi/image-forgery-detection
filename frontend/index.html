@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Forgery Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #1e3a8a 0%, #7c3aed 100%); }
+        .drop-zone { border: 2px dashed #6366f1; transition: all 0.3s; }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #4f46e5; background: rgba(99, 102, 241, 0.1); }
+        .result-card { animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-gray-900 min-h-screen text-white">
+    <!-- Navigation -->
+    <nav class="gradient-bg shadow-lg">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold"><i class="fas fa-shield-alt mr-2"></i>Forgery Detector</h1>
+            <div class="space-x-4">
+                <button onclick="showSection('upload')" class="hover:bg-white/20 px-4 py-2 rounded">Upload</button>
+                <button onclick="showSection('history')" class="hover:bg-white/20 px-4 py-2 rounded">History</button>
+                <button onclick="showSection('dashboard')" class="hover:bg-white/20 px-4 py-2 rounded">Dashboard</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Upload Section -->
+        <div id="upload-section">
+            <div class="max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-center mb-8">Detect Image Manipulation</h2>
+                
+                <!-- Drop Zone -->
+                <div id="drop-zone" class="drop-zone rounded-xl p-12 text-center cursor-pointer bg-gray-800">
+                    <i class="fas fa-cloud-upload-alt text-6xl text-indigo-400 mb-4"></i>
+                    <p class="text-xl mb-2">Drag & Drop Image Here</p>
+                    <p class="text-gray-400">or click to browse</p>
+                    <input type="file" id="file-input" accept="image/*" class="hidden">
+                </div>
+
+                <!-- Preview -->
+                <div id="preview-container" class="hidden mt-6">
+                    <div class="bg-gray-800 rounded-xl p-4">
+                        <img id="preview-image" class="max-h-64 mx-auto rounded-lg">
+                        <div class="flex justify-center mt-4 space-x-4">
+                            <button onclick="analyzeImage()" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg">
+                                <i class="fas fa-search mr-2"></i>Analyze
+                            </button>
+                            <button onclick="clearPreview()" class="bg-gray-600 hover:bg-gray-700 px-6 py-2 rounded-lg">
+                                <i class="fas fa-times mr-2"></i>Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div id="loading" class="hidden mt-6 text-center">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-indigo-500 border-t-transparent"></div>
+                    <p class="mt-4 text-gray-400">Analyzing image...</p>
+                </div>
+
+                <!-- Results -->
+                <div id="results" class="hidden mt-6 result-card">
+                    <div class="bg-gray-800 rounded-xl p-6">
+                        <div id="verdict-badge" class="text-center mb-6">
+                            <!-- Verdict will be inserted here -->
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-gray-700 rounded-lg p-4 text-center">
+                                <p class="text-gray-400 text-sm">Confidence</p>
+                                <p id="confidence" class="text-2xl font-bold text-indigo-400">-</p>
+                            </div>
+                            <div class="bg-gray-700 rounded-lg p-4 text-center">
+                                <p class="text-gray-400 text-sm">Score</p>
+                                <p id="score" class="text-2xl font-bold text-indigo-400">-</p>
+                            </div>
+                        </div>
+
+                        <h3 class="font-semibold mb-3">Model Scores</h3>
+                        <div class="space-y-2" id="model-scores">
+                            <!-- Scores will be inserted here -->
+                        </div>
+
+                        <div id="heatmap-container" class="mt-6 hidden">
+                            <h3 class="font-semibold mb-3">Manipulation Heatmap</h3>
+                            <img id="heatmap-image" class="rounded-lg w-full">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History Section -->
+        <div id="history-section" class="hidden">
+            <h2 class="text-2xl font-bold mb-6">Analysis History</h2>
+            <div id="history-list" class="space-y-4">
+                <!-- History items will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="hidden">
+            <h2 class="text-2xl font-bold mb-6">Dashboard</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="bg-gray-800 rounded-xl p-6 text-center">
+                    <i class="fas fa-images text-4xl text-indigo-400 mb-2"></i>
+                    <p class="text-3xl font-bold" id="total-analyses">0</p>
+                    <p class="text-gray-400">Total Analyses</p>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-6 text-center">
+                    <i class="fas fa-check-circle text-4xl text-green-400 mb-2"></i>
+                    <p class="text-3xl font-bold" id="authentic-count">0</p>
+                    <p class="text-gray-400">Authentic</p>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-6 text-center">
+                    <i class="fas fa-exclamation-triangle text-4xl text-red-400 mb-2"></i>
+                    <p class="text-3xl font-bold" id="forged-count">0</p>
+                    <p class="text-gray-400">Forged</p>
+                </div>
+                <div class="bg-gray-800 rounded-xl p-6 text-center">
+                    <i class="fas fa-percentage text-4xl text-yellow-400 mb-2"></i>
+                    <p class="text-3xl font-bold" id="forgery-rate">0%</p>
+                    <p class="text-gray-400">Forgery Rate</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>

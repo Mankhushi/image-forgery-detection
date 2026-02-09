@@ -1,0 +1,42 @@
+# Image Forgery Detection - Requirements
+
+# Web Framework
+fastapi
+uvicorn
+python-multipart
+
+# ML & Deep Learning
+torch
+torchvision
+numpy
+opencv-python
+Pillow
+scikit-learn
+
+# Database
+sqlalchemy
+aiosqlite
+
+# Authentication
+python-jose[cryptography]
+passlib[bcrypt]
+email-validator
+
+# Utilities
+python-dotenv
+pydantic
+pydantic-settings
+aiofiles
+
+# Visualization
+matplotlib
+
+# Logging
+loguru
+
+# Testing
+pytest
+httpx
+
+# Report Generation
+jinja2
